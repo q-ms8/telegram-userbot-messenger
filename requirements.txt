@@ -1,2 +1,6 @@
+# Telegram Userbot
 telethon==1.40.0
 python-dotenv==1.1.0
+
+# WhatsApp Web Messenger
+playwright==1.52.0

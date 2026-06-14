@@ -1,0 +1,7 @@
+# WhatsApp recipients list — one per line
+# Lines starting with # are comments and will be skipped
+# You can use: "Contact Name" or "+phone_number"
+
+John Doe
++1234567890
+Jane Smith

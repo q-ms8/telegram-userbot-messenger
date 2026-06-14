@@ -1,91 +1,102 @@
-# 📨 Telegram Userbot Messenger
+# Telegram & WhatsApp Messenger
 
-Send Telegram messages **from your personal account** via the command line. Built with [Telethon](https://docs.telethon.dev/).
+Send messages **from your personal accounts** via the command line. Supports single and bulk messaging.
+
+| Platform | Script | Library | Auth |
+|----------|--------|---------|------|
+| Telegram | `send_message.py` | [Telethon](https://docs.telethon.dev/) | API ID + OTP |
+| WhatsApp | `send_whatsapp.py` | [Playwright](https://playwright.dev/) | QR Code scan |
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Get Telegram API Credentials
-
-1. Go to [https://my.telegram.org](https://my.telegram.org)
-2. Log in with your phone number
-3. Click **"API Development Tools"**
-4. Create a new application (any name/short name is fine)
-5. Copy the **API ID** and **API Hash**
-
-### 2. Setup
+## 🚀 Setup
 
 ```bash
-# Clone/navigate to the project
-cd Antigravity
-
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Create your .env file from the template
+# Install Chromium browser for WhatsApp (one-time)
+playwright install chromium
+```
+
+---
+
+## 📱 Telegram Setup
+
+### 1. Get API Credentials
+1. Go to [https://my.telegram.org](https://my.telegram.org)
+2. Log in → **"API Development Tools"** → Create an app
+3. Copy the **API ID** and **API Hash**
+
+### 2. Configure
+```bash
 copy .env.example .env        # Windows
 # cp .env.example .env        # Linux/Mac
 ```
+Edit `.env` and fill in `API_ID`, `API_HASH`, and `PHONE`.
 
-Edit `.env` and fill in your credentials:
+### 3. Usage
+```bash
+# Send to a single user
+python send_message.py --to "@username" --message "Hello!"
 
-```env
-API_ID=12345678
-API_HASH=abcdef1234567890abcdef1234567890
-PHONE=+1234567890
+# Bulk send to many users
+python send_message.py --list recipients.txt --message "Hello everyone!"
+python send_message.py --list recipients.txt --message "Hi!" --delay 5
 ```
 
-### 3. First Run (Authentication)
-
-On the first run, Telethon will ask you to:
-1. Enter your phone number (if not in `.env`)
-2. Enter the OTP code sent to your Telegram app
-3. Enter your 2FA password (if enabled)
-
-A session file (`userbot_session.session`) is created so you **won't need to authenticate again**.
+### Telegram Options
+| Flag | Description |
+|------|-------------|
+| `--to` | Single recipient: `@username`, `+phone`, or user ID |
+| `--list`, `-l` | File with one recipient per line |
+| `--message`, `-m` | Message text |
+| `--file`, `-f` | Read message from a text file |
+| `--delay`, `-d` | Seconds between messages in bulk mode (default: 2) |
 
 ---
 
-## 📖 Usage
+## 💬 WhatsApp Setup
 
-### Send a message to a username
+### 1. First Run (QR Code)
+On the first run, a browser window opens with WhatsApp Web:
+1. Open WhatsApp on your phone
+2. Go to **Settings → Linked Devices → Link a Device**
+3. Scan the QR code in the browser
+
+The session is saved — you won't need to scan again.
+
+### 2. Usage
 ```bash
-python send_message.py --to @username --message "Hello from CLI!"
+# Send to a single contact (use their name as it appears in your contacts)
+python send_whatsapp.py --to "John Doe" --message "Hello!"
+
+# Send to a phone number
+python send_whatsapp.py --to "+1234567890" --message "Hey!"
+
+# Bulk send
+python send_whatsapp.py --list wa_recipients.txt --message "Hello everyone!"
+python send_whatsapp.py --list wa_recipients.txt --file message.txt --delay 15
 ```
 
-### Send to a phone number
-```bash
-python send_message.py --to +1234567890 --message "Hey there!"
-```
+### WhatsApp Options
+| Flag | Description |
+|------|-------------|
+| `--to` | Single recipient: contact name or `+phone` |
+| `--list`, `-l` | File with one recipient per line |
+| `--message`, `-m` | Message text |
+| `--file`, `-f` | Read message from a text file |
+| `--delay`, `-d` | Base delay between messages (default: 10s, min: 8s) |
+| `--headless` | Run browser without a window (don't use on first login) |
 
-### Send to a user ID
-```bash
-python send_message.py --to 123456789 --message "Hi!"
-```
-
-### Send a long message from a file
-```bash
-python send_message.py --to @username --file message.txt
-```
-
-### Interactive mode (type your message)
-```bash
-python send_message.py --to @username
-```
-This opens an interactive prompt where you can type a multi-line message. Press **Enter twice** to send.
-
----
-
-## 🛠 Options
-
-| Flag             | Description                                |
-|------------------|--------------------------------------------|
-| `--to`           | **(Required)** Recipient: `@username`, `+phone`, or user ID |
-| `--message`, `-m`| Message text to send                       |
-| `--file`, `-f`   | Path to a text file containing the message |
-
-If neither `--message` nor `--file` is provided, interactive mode is activated.
+### Built-in Safety Features
+| Feature | Details |
+|---------|---------|
+| **Max messages** | 40 per session |
+| **Random delays** | Base delay + 2–6s random jitter |
+| **Human typing** | Characters typed one-by-one at random speed |
+| **Cool-down** | 15–30s pause every 10 messages |
+| **Confirmation** | Asks `y/n` before bulk sending |
 
 ---
 
@@ -93,32 +104,47 @@ If neither `--message` nor `--file` is provided, interactive mode is activated.
 
 ```
 Antigravity/
-├── .env.example        # Template for API credentials
-├── .env                # Your actual credentials (git-ignored)
-├── .gitignore          # Ignores secrets and session files
-├── requirements.txt    # Python dependencies
-├── send_message.py     # Main CLI script
-└── README.md           # This file
+├── .env.example              # Template for Telegram API credentials
+├── .env                      # Your credentials (git-ignored)
+├── .gitignore                # Ignores secrets, sessions, and private data
+├── requirements.txt          # Python dependencies
+├── send_message.py           # Telegram CLI messenger
+├── send_whatsapp.py          # WhatsApp Web CLI messenger
+├── recipients_example.txt    # Sample Telegram recipients list
+├── wa_recipients_example.txt # Sample WhatsApp recipients list
+└── README.md                 # This file
 ```
 
 ---
 
 ## ⚠️ Important Notes
 
-- **Session security**: The `.session` file contains your login session. Keep it private — anyone with this file can access your Telegram account.
-- **Rate limits**: Telegram enforces rate limits. If you send too many messages too quickly, you may be temporarily blocked.
-- **Terms of Service**: Using the Client API for spam or abuse violates [Telegram's ToS](https://core.telegram.org/api/terms). Use responsibly.
-- **First message**: You can only message users who you've had prior contact with, or whose privacy settings allow messages from anyone.
+### Telegram
+- **Session file**: `*.session` contains your login — keep it private.
+- **Rate limits**: Telegram may temporarily block you if you send too fast.
+- **ToS**: Don't use for spam. [Telegram API Terms](https://core.telegram.org/api/terms).
+
+### WhatsApp
+- **No official API**: WhatsApp does not provide a Client API for personal accounts. This tool automates WhatsApp Web via a real browser.
+- **Account risk**: Sending too many messages too fast can get your account banned. The built-in safety features reduce this risk significantly.
+- **Session folder**: `whatsapp_session/` contains your browser login — keep it private.
+- **Contact names**: Use the exact name as it appears in your WhatsApp contacts.
 
 ---
 
 ## 🐛 Troubleshooting
 
+### Telegram
 | Problem | Solution |
 |---------|----------|
-| `Missing API_ID or API_HASH` | Make sure `.env` exists and has valid values |
+| `Missing API_ID or API_HASH` | Make sure `.env` exists with valid values |
 | `PhoneNumberInvalidError` | Use international format: `+1234567890` |
-| `UsernameNotOccupiedError` | Double-check the username spelling |
 | `FloodWaitError` | You're rate-limited — wait the specified time |
-| `SessionPasswordNeededError` | Enter your 2FA password when prompted |
-| `Could not find user` | Ensure you've had prior contact with the user, or try their phone number |
+
+### WhatsApp
+| Problem | Solution |
+|---------|----------|
+| `Playwright is not installed` | Run `pip install playwright` then `playwright install chromium` |
+| QR code won't scan | Delete `whatsapp_session/` folder and try again |
+| Contact not found | Use the exact name from your WhatsApp contacts |
+| Browser crashes | Make sure no other Playwright instance is running |

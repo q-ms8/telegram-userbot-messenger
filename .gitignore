@@ -7,6 +7,10 @@
 
 # Your real recipients list (contains private usernames/phones)
 recipients.txt
+wa_recipients.txt
+
+# WhatsApp Web browser session (contains your login)
+whatsapp_session/
 
 # Python
 __pycache__/
